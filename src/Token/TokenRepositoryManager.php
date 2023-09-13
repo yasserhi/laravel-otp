@@ -20,6 +20,7 @@ class TokenRepositoryManager extends Manager
             $this->container->make(CacheRepository::class),
             $this->config->get('otp.token_lifetime', 5),
             $this->config->get('otp.token_length', 5),
+            $this->config->get('otp.throttle', 0),
             $this->config->get('otp.prefix'),
         );
     }
@@ -30,6 +31,7 @@ class TokenRepositoryManager extends Manager
             $this->container->make(ConnectionInterface::class),
             $this->config->get('otp.token_lifetime'),
             $this->config->get('otp.token_length'),
+            $this->config->get('otp.throttle', 0),
             $this->config->get('otp.token_table'),
         );
     }

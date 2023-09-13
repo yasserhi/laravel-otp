@@ -14,35 +14,44 @@ class CacheTokenRepository extends AbstractTokenRepository
         protected Cache $cache,
         protected int $expires,
         protected int $tokenLength,
+        protected int $throttle,
         protected string $prefix
     ) {
-        parent::__construct($expires, $tokenLength);
+        parent::__construct($expires, $tokenLength, $throttle);
     }
 
-    public function deleteExisting(OTPNotifiable $user): bool
+    public function deleteExisting(OTPNotifiable $notifiable): bool
     {
-        return $this->cache->forget($this->getSignatureKey($user->getMobileForOTPNotification()));
+        return $this->cache->forget($this->getSignatureKey($notifiable));
     }
 
-    public function exists(OTPNotifiable $user, string $token): bool
+    public function exists(OTPNotifiable $notifiable, string $token): bool
     {
-        $signature = $this->getSignatureKey($user->getMobileForOTPNotification());
+        $signature = $this->getSignatureKey($notifiable);
 
         return $this->cache->has($signature) &&
             $this->cache->get($signature)['token'] === $token;
     }
 
-    protected function save(string $mobile, string $token): bool
+    public function recentlyCreatedToken(OTPNotifiable $notifiable): bool
+    {
+        $signature = $this->getSignatureKey($notifiable);
+
+        return $this->cache->has($signature) &&
+            $this->tokenRecentlyCreated($this->cache->get($signature)['sent_at']);
+    }
+
+    protected function save(OTPNotifiable $notifiable, string $token): bool
     {
         return $this->cache->add(
-            $this->getSignatureKey($mobile),
-            $this->getPayload($mobile, $token),
+            $this->getSignatureKey($notifiable),
+            $this->getPayload($notifiable, $token),
             now()->addMinutes($this->expires)
         );
     }
 
-    protected function getSignatureKey($mobile): string
+    protected function getSignatureKey(OTPNotifiable $notifiable): string
     {
-        return $this->prefix.$mobile;
+        return $this->prefix.$notifiable::class.$notifiable->id;
     }
 }

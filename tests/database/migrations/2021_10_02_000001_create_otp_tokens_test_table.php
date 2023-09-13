@@ -9,13 +9,12 @@ class CreateOtpTokensTestTable extends Migration
     public function up(): void
     {
         Schema::create('otp_tokens', static function (Blueprint $table): void {
-            $table->increments('id');
-            $table->string('mobile')->index();
-            $table->string('token', 10)->index();
+            $table->morphs("authenticable");
+            $table->string('token', 10);
             $table->timestamp('sent_at')->nullable();
             $table->timestamp('expires_at')->nullable();
 
-            $table->index(['mobile', 'token']);
+            // $table->unique(['authenticable_id', 'authenticable_type']);
         });
     }
 

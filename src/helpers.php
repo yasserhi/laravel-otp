@@ -8,23 +8,23 @@ if (! function_exists('OTP')) {
     /**
      * @throws InvalidOTPTokenException|Throwable
      */
-    function OTP(?string $mobile = null, $token = null):OTPBroker|OTPNotifiable
+    function OTP(?OTPNotifiable $notifiable = null, $token = null):OTPBroker|string|bool
     {
         /** @var OTPBroker $OTP */
         $OTP = app(OTPBroker::class);
 
-        if (is_null($mobile)) {
+        if (is_null($notifiable)) {
             return $OTP;
         }
 
         if (is_null($token)) {
-            return $OTP->send($mobile);
+            return $OTP->send($notifiable);
         }
 
         if (is_array($token)) {
-            return $OTP->channel($token)->send($mobile);
+            return $OTP->channel($token)->send($notifiable);
         }
 
-        return $OTP->validate($mobile, $token);
+        return $OTP->validate($notifiable, $token);
     }
 }

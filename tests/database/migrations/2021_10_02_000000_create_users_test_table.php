@@ -11,6 +11,7 @@ class CreateUsersTestTable extends Migration
         Schema::create('users', static function (Blueprint $table): void {
             $table->increments('id');
             $table->string('name')->nullable()->default(null);
+            $table->string('email');
             $table->string('mobile');
         });
     }

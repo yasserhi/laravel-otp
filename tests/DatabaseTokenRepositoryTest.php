@@ -21,7 +21,11 @@ class DatabaseTokenRepositoryTest extends TestCase
         $config->set('otp.token_storage', 'database');
         $this->repository = $this->app->make(TokenRepositoryInterface::class);
 
-        $this->user = new OTPNotifiableUser(['mobile' => '5555555555']);
+        $this->user = new OTPNotifiableUser([
+            'id' => 1,
+            'mobile' => '5555555555',
+            'email' => 'testuser@example.com'
+        ]);
     }
 
     /**
@@ -34,7 +38,8 @@ class DatabaseTokenRepositoryTest extends TestCase
         $this->assertEquals(config('otp.token_length'), Str::length($token));
 
         $this->assertDatabaseHas('otp_tokens', [
-            'mobile' => $this->user->mobile,
+            'authenticable_id' => $this->user->id,
+            'authenticable_type' => $this->user::class,
             'token' => $token,
             'expires_at' => (string) now()->addMinutes(config('otp.token_lifetime')),
         ]);
@@ -48,7 +53,8 @@ class DatabaseTokenRepositoryTest extends TestCase
         $token = $this->repository->create($this->user);
 
         $tokenRow = [
-            'mobile' => $this->user->mobile,
+            'authenticable_id' => $this->user->id,
+            'authenticable_type' => $this->user::class,
             'token' => $token,
         ];
 

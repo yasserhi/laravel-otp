@@ -50,7 +50,7 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->publishes([$this->getConfig() => config_path('otp.php')], 'config');
 
-        $this->publishes([__DIR__.'/../lang' => app()->langPath().'/vendor/OTP'], 'lang');
+        $this->publishes([__DIR__.'/../lang' => app()->langPath()], 'lang');
 
         $this->publishes([__DIR__.'/../database/migrations' => database_path('migrations')], 'migrations');
     }

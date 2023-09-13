@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Cache;
 
 class CacheTokenRepositoryTest extends TestCase
 {
-    protected TokenRepositoryInterface$repository;
+    protected TokenRepositoryInterface $repository;
 
     protected OTPNotifiableUser $user;
 
@@ -20,19 +20,32 @@ class CacheTokenRepositoryTest extends TestCase
         config()->set('otp.token_storage', 'cache');
         $this->repository = $this->app->make(TokenRepositoryInterface::class);
 
-        $this->user = new OTPNotifiableUser(['mobile' => '5555555555']);
+        $this->user = new OTPNotifiableUser([
+            'id' => 1,
+            'mobile' => '5555555555',
+            'email' => 'testuser@example.com'
+        ]);
     }
 
+    private function getSignatureKey(): string
+    {
+        return $this->user::class.$this->user->id;
+    }
     /**
      * @test
      */
     public function it_can_create_a_token_successfully(): void
     {
-        $payload = ['mobile' => $this->user->mobile, 'sent_at' => now()->toDateTimeString()];
+        $payload = [
+            'authenticable_id' => $this->user->id,
+            'authenticable_type' => $this->user::class,
+            'sent_at' => now()->toDateTimeString()
+        ];
+
         $token = $this->repository->create($this->user);
         $payload['token'] = $token;
 
-        $this->assertEquals(Cache::get($payload['mobile']), $payload);
+        $this->assertEquals(Cache::get($this->getSignatureKey()), $payload);
     }
 
     /**
@@ -44,7 +57,7 @@ class CacheTokenRepositoryTest extends TestCase
 
         $this->assertTrue($this->repository->deleteExisting($this->user));
 
-        $this->assertNull(Cache::get($this->user->mobile));
+        $this->assertNull(Cache::get($this->getSignatureKey()));
     }
 
     /**
