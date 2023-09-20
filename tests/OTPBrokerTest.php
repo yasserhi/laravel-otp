@@ -140,6 +140,28 @@ class OTPBrokerTest extends TestCase
     /**
      * @test
      */
+    public function it_can_validate_a_valid_token_without_revoking(): void
+    {
+        // cache storage
+        $token = OTP()->send($this->user);
+        $valid = OTP()->validate($this->user, $token, false);
+        $this->assertTrue($valid);
+        $valid = OTP()->validate($this->user, $token);
+        $this->assertTrue($valid);
+
+        // Database Storage
+        config()->set('otp.token_storage', 'database');
+        $otp = OTP();
+        $token = $otp->send($this->user);
+        $valid = OTP($this->user, $token, false);
+        $this->assertTrue($valid);
+        $valid = OTP($this->user, $token);
+        $this->assertTrue($valid);
+    }
+
+    /**
+     * @test
+     */
     public function it_can_revoke_a_token_successfully(): void
     {
         OTP($this->user);

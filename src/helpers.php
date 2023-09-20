@@ -8,7 +8,7 @@ if (! function_exists('OTP')) {
     /**
      * @throws InvalidOTPTokenException|Throwable
      */
-    function OTP(?OTPNotifiable $notifiable = null, $token = null):OTPBroker|string|bool
+    function OTP(?OTPNotifiable $notifiable = null, $token = null, $revoke=True):OTPBroker|string|bool
     {
         /** @var OTPBroker $OTP */
         $OTP = app(OTPBroker::class);
@@ -25,6 +25,6 @@ if (! function_exists('OTP')) {
             return $OTP->channel($token)->send($notifiable);
         }
 
-        return $OTP->validate($notifiable, $token);
+        return $OTP->validate($notifiable, $token, $revoke);
     }
 }
