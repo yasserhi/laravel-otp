@@ -41,11 +41,12 @@ class OTPBroker
     /**
      * @throws InvalidOTPTokenException|Throwable
      */
-    public function validate(OTPNotifiable $notifiable, string $token): bool
+    public function validate(OTPNotifiable $notifiable, string $token, bool $revoke=true): bool
     {
         throw_unless($this->tokenExists($notifiable, $token), InvalidOTPTokenException::class);
 
-        $this->revoke($notifiable);
+        if ($revoke)
+            $this->revoke($notifiable);
 
         return true;
     }
