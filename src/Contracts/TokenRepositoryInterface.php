@@ -2,12 +2,14 @@
 
 namespace Fouladgar\OTP\Contracts;
 
+use Fouladgar\OTP\Token\TokenPayload;
+
 interface TokenRepositoryInterface
 {
     /**
      * Create a new token record.
      */
-    public function create(OTPNotifiable $notifiable): string;
+    public function create(OTPNotifiable $notifiable): TokenPayload;
 
     /**
      * Determine if a token record exists and is valid.

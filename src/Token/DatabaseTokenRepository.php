@@ -56,15 +56,10 @@ class DatabaseTokenRepository extends AbstractTokenRepository
         return $this->connection->table($this->table);
     }
 
-    protected function save(OTPNotifiable $notifiable, string $token): bool
+    protected function save(OTPNotifiable $notifiable, string $token): TokenPayload
     {
-        return $this->getTable()->insert($this->getPayload($notifiable, $token));
+        $token_payload = $this->getPayload($notifiable, $token);
+        $this->getTable()->insert($token_payload->toArray(['throttled_till']));
+        return $token_payload;
     }
-
-    protected function getPayload(OTPNotifiable $notifiable, string $token): array
-    {
-        return parent::getPayload($notifiable, $token) + ['expires_at' => now()->addMinutes($this->expires)];
-    }
-
-    
 }

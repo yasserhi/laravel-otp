@@ -41,13 +41,16 @@ class CacheTokenRepository extends AbstractTokenRepository
             $this->tokenRecentlyCreated($this->cache->get($signature)['sent_at']);
     }
 
-    protected function save(OTPNotifiable $notifiable, string $token): bool
+    protected function save(OTPNotifiable $notifiable, string $token): TokenPayload
     {
-        return $this->cache->add(
+        
+        $token_payload = $this->getPayload($notifiable, $token);
+        $this->cache->add(
             $this->getSignatureKey($notifiable),
-            $this->getPayload($notifiable, $token),
-            now()->addMinutes($this->expires)
+            $token_payload->toArray(['throttled_till', 'expires_at']),
+            $token_payload->expires_at,
         );
+        return $token_payload;
     }
 
     protected function getSignatureKey(OTPNotifiable $notifiable): string

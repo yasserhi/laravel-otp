@@ -8,6 +8,7 @@ use Fouladgar\OTP\Contracts\OTPNotifiable;
 use Fouladgar\OTP\Contracts\TokenRepositoryInterface;
 use Fouladgar\OTP\Exceptions\InvalidOTPTokenException;
 use Fouladgar\OTP\Exceptions\OTPThrottledException;
+use Fouladgar\OTP\Token\TokenPayload;
 use Illuminate\Support\Arr;
 use Throwable;
 
@@ -24,18 +25,18 @@ class OTPBroker
     /**
      * @throws OTPThrottledException|Throwable
      */
-    public function send(OTPNotifiable $notifiable): string
+    public function send(OTPNotifiable $notifiable): TokenPayload
     {
         throw_if($this->tokenRepository->recentlyCreatedToken($notifiable), OTPThrottledException::class);
         
-        $token = $this->tokenRepository->create($notifiable);
+        $token_payload = $this->tokenRepository->create($notifiable);
 
         $notifiable->sendOTPNotification(
-            $token,
+            $token_payload->token,
             $this->channel
         );
 
-        return $token;
+        return $token_payload;
     }
 
     /**

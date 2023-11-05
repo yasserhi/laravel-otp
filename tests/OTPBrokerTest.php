@@ -8,9 +8,8 @@ use Fouladgar\OTP\Exceptions\OTPThrottledException;
 use Fouladgar\OTP\Notifications\Channels\OTPSMSChannel;
 use Fouladgar\OTP\Notifications\OTPNotification;
 use Fouladgar\OTP\Tests\Models\OTPNotifiableUser;
+use Fouladgar\OTP\Token\TokenPayload;
 use Illuminate\Support\Facades\Notification;
-
-use function PHPUnit\Framework\assertIsString;
 
 class OTPBrokerTest extends TestCase
 {
@@ -34,8 +33,8 @@ class OTPBrokerTest extends TestCase
     public function it_can_send_token_to_an_exist_user(): void
     {
         Notification::fake();
-
-        $this->assertIsString(OTP()->send($this->user));
+        $token_payload = OTP()->send($this->user);
+        $this->assertInstanceOf(TokenPayload::class, $token_payload);
 
         Notification::assertSentTo(
             $this->user,
@@ -67,8 +66,8 @@ class OTPBrokerTest extends TestCase
         Notification::fake();
 
         $useChannels = [OTPSMSChannel::class, 'mail'];
-        $token = OTP($this->user, $useChannels);
-        $this->assertIsString($token);
+        $token_payload = OTP($this->user, $useChannels);
+        $this->assertInstanceOf(TokenPayload::class, $token_payload);
 
         Notification::assertSentTo(
             $this->user,
@@ -99,8 +98,8 @@ class OTPBrokerTest extends TestCase
     {
         Notification::fake();
 
-        $token = OTP($this->user, [CustomOTPChannel::class]);
-        assertIsString($token);
+        $token_payload = OTP($this->user, [CustomOTPChannel::class]);
+        $this->assertInstanceOf(TokenPayload::class, $token_payload);
 
         Notification::assertSentTo(
             $this->user,
@@ -124,16 +123,18 @@ class OTPBrokerTest extends TestCase
     public function it_can_validate_a_valid_token(): void
     {
         // cache storage
-        $token = OTP()->send($this->user);
-        $valid = OTP()->validate($this->user, $token);
+        $token_payload = OTP()->send($this->user);
+
+        $valid = OTP()->validate($this->user, $token_payload->token);
 
         $this->assertTrue($valid);
 
         // Database Storage
         config()->set('otp.token_storage', 'database');
         $otp = OTP();
-        $token = $otp->send($this->user);
-        $valid = OTP($this->user, $token);
+        $token_payload = $otp->send($this->user);
+
+        $valid = OTP($this->user, $token_payload->token);
         $this->assertTrue($valid);
     }
 
@@ -143,19 +144,21 @@ class OTPBrokerTest extends TestCase
     public function it_can_validate_a_valid_token_without_revoking(): void
     {
         // cache storage
-        $token = OTP()->send($this->user);
-        $valid = OTP()->validate($this->user, $token, false);
+        $token_payload = OTP()->send($this->user);
+
+        $valid = OTP()->validate($this->user, $token_payload->token, false);
         $this->assertTrue($valid);
-        $valid = OTP()->validate($this->user, $token);
+        $valid = OTP()->validate($this->user, $token_payload->token);
         $this->assertTrue($valid);
 
         // Database Storage
         config()->set('otp.token_storage', 'database');
         $otp = OTP();
-        $token = $otp->send($this->user);
-        $valid = OTP($this->user, $token, false);
+        $token_payload = $otp->send($this->user);
+
+        $valid = OTP($this->user, $token_payload->token, false);
         $this->assertTrue($valid);
-        $valid = OTP($this->user, $token);
+        $valid = OTP($this->user, $token_payload->token);
         $this->assertTrue($valid);
     }
 
@@ -177,10 +180,10 @@ class OTPBrokerTest extends TestCase
     {
         config()->set('otp.throttle', 1);
 
-        $token = OTP($this->user);
-        assertIsString($token);
+        $token_payload = OTP($this->user);
+        $this->assertInstanceOf(TokenPayload::class, $token_payload);
         
         $this->expectException(OTPThrottledException::class);
-        $token = OTP($this->user);
+        $token_payload = OTP($this->user);
     }
 }

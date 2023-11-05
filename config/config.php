@@ -53,7 +53,7 @@ return [
     | quickly generating a very large amount of OTPs.
     |
     */
-    'throttle'   => 60*3,
+    'throttle'   => env('OTP_THROTTLE', 60*3),
 
     /*
     |--------------------------------------------------------------------------

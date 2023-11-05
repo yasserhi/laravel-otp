@@ -33,7 +33,8 @@ class DatabaseTokenRepositoryTest extends TestCase
      */
     public function it_can_create_a_token_successfully(): void
     {
-        $token = $this->repository->create($this->user);
+        $token_payload = $this->repository->create($this->user);
+        $token = $token_payload->token;
 
         $this->assertEquals(config('otp.token_length'), Str::length($token));
 
@@ -50,7 +51,8 @@ class DatabaseTokenRepositoryTest extends TestCase
      */
     public function it_can_delete_existing_token_successfully(): void
     {
-        $token = $this->repository->create($this->user);
+        $token_payload = $this->repository->create($this->user);
+        $token = $token_payload->token;
 
         $tokenRow = [
             'authenticable_id' => $this->user->id,
@@ -67,7 +69,8 @@ class DatabaseTokenRepositoryTest extends TestCase
      */
     public function it_can_find_existing_and_not_expired_token_successfully(): void
     {
-        $token = $this->repository->create($this->user);
+        $token_payload = $this->repository->create($this->user);
+        $token = $token_payload->token;
 
         $this->assertTrue($this->repository->exists($this->user, $token));
     }
@@ -81,7 +84,8 @@ class DatabaseTokenRepositoryTest extends TestCase
         Carbon::setTestNow($testDate);
 
         $this->repository = $this->app->make(TokenRepositoryInterface::class);
-        $token = $this->repository->create($this->user);
+        $token_payload = $this->repository->create($this->user);
+        $token = $token_payload->token;
 
         Carbon::setTestNow();
         $this->assertFalse($this->repository->exists($this->user, $token));

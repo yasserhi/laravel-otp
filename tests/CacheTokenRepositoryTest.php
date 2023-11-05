@@ -42,8 +42,8 @@ class CacheTokenRepositoryTest extends TestCase
             'sent_at' => now()->toDateTimeString()
         ];
 
-        $token = $this->repository->create($this->user);
-        $payload['token'] = $token;
+        $token_payload = $this->repository->create($this->user);
+        $payload['token'] = $token_payload->token;;
 
         $this->assertEquals(Cache::get($this->getSignatureKey()), $payload);
     }
@@ -65,9 +65,9 @@ class CacheTokenRepositoryTest extends TestCase
      */
     public function it_can_find_existing_and_not_expired_token_successfully(): void
     {
-        $token = $this->repository->create($this->user);
+        $token_payload = $this->repository->create($this->user);
 
-        $this->assertTrue($this->repository->exists($this->user, $token));
+        $this->assertTrue($this->repository->exists($this->user, $token_payload->token));
     }
 
     /**
@@ -80,10 +80,10 @@ class CacheTokenRepositoryTest extends TestCase
 
         $this->repository = $this->app->make(TokenRepositoryInterface::class);
 
-        $token = $this->repository->create($this->user);
+        $token_payload = $this->repository->create($this->user);
 
         Carbon::setTestNow();
-        $this->assertFalse($this->repository->exists($this->user, $token));
+        $this->assertFalse($this->repository->exists($this->user, $token_payload->token));
     }
 
     /**
